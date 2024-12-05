@@ -82,6 +82,7 @@ class Usuarios(Document):
     tipo_usuario = StringField(choices=TIPOS_USUARIOS, default='consumidor', required=False)
     formas_pagamento = ListField(EmbeddedDocumentField(FormaPagamento), required=False)
     minha_tenda = EmbeddedDocumentField(MinhaTenda, required=False)
+    compras = ListField(DictField(), required=False)
     data_cadastro = DateTimeField(default=DATE_NOW)
 
     meta = {

@@ -305,3 +305,4 @@ class MyTendaView(View):
     def generate_delivery_time(self):
         numbers = [randint(5, 95), randint(5, 95)]
         return {"min": min(numbers), "max": max(numbers)}
+    

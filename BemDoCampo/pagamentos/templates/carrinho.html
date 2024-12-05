@@ -142,13 +142,14 @@
 
             <!-- Botão para concluir a compra -->
             <button type="button" class="btn btn-primary" id="finalizarCompra">Finalizar Compra</button>
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script>
+{% comment %} <script>
     // Lógica para concluir a compra
     $('#finalizarCompra').on('click', function() {
         var endereco = $('#endereco').val();
@@ -162,9 +163,15 @@
         // Exemplo de redirecionamento
         // window.location.href = '/confirmacao-compra/';
     });
-</script>
+</script> {% endcomment %}
 
 <script>
+
+    $.ajaxSetup({
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    });
     function atualizarTotalCarrinho() {
         var totalCarrinho = 0;
         // Itera sobre todos os itens da tabela e soma os valores
@@ -192,5 +199,54 @@
         atualizarTotalCarrinho()
         atualizarResumo()
     }
+
+
+    $('#finalizarCompra').on('click', function () {
+        var endereco = $('#endereco').val();
+        var pagamento = $('#pagamento').val();
+        var cpf = $('#cpf').val();
+        var itens = [];
+
+        // Coleta os dados de cada item no carrinho
+        $('tbody tr').each(function () {
+            var tr = $(this);
+            var nome = tr.find('td:nth-child(2)').text().trim();
+            var quantidade = tr.find('#qtdProd').val();
+            var valorUnitario = tr.find('.valorUnitario').data('unitario');
+            var valorTotal = tr.find('.valorTotal').text().replace('R$ ', '').replace('.', '').replace(',', '.');
+
+            itens.push({
+                nome: nome,
+                quantidade: parseInt(quantidade),
+                valor_unitario: parseFloat(valorUnitario),
+                valor_total: parseFloat(valorTotal)
+            });
+        });
+
+        var totalCarrinho = $('.totalCarrinho').text().replace('R$ ', '').replace('.', '').replace(',', '.');
+
+        // Enviar dados via AJAX
+        $.ajax({
+            url: "{% url 'finalizar_compra' %}",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                endereco: endereco,
+                pagamento: pagamento,
+                cpf: cpf,
+                itens: itens,
+                valor_total: totalCarrinho,
+                quantidade_total: itens.length
+            }),
+            success: function (response) {
+                alert(response.message);
+                // Redirecionar ou limpar o carrinho
+                window.location.href = "/"; // Ajuste para a URL desejada
+            },
+            error: function (error) {
+                alert("Erro ao finalizar a compra: " + error.responseJSON.error);
+            }
+        });
+    });
 </script>
 {% endblock %}

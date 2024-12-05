@@ -110,7 +110,7 @@ DATABASES = {
         'PORT': os.getenv('PORT_ML'),
     }
 }
-
+from mongoengine import connect
 connect(
     db=os.getenv('NAME_DB'),
     host=os.getenv('HOST_MO'),
